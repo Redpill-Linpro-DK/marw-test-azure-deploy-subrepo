@@ -1,0 +1,61 @@
+name: Main workflow
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - hotfix/*
+      - '**'  # Catch-all for other branches
+
+jobs:
+  load-and-print:
+    name: Sample main workflow
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Checkout common repository
+      uses: actions/checkout@v3
+      with:
+        repository: Redpill-Linpro-DK/marw-test-azure-deploy
+    - name: Determine Environment File
+      id: determine-env
+      run: |
+        echo "Branch name: ${{ github.ref_name }}"
+        if [[ "${{ github.ref_name }}" == "main" || "${{ github.ref_name }}" == hotfix/* ]]; then
+          echo "env_file=constants.prod.env" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref_name }}" == "develop" ]]; then
+          echo "env_file=constants.test.env" >> $GITHUB_OUTPUT
+        else
+          echo "env_file=constants.dev.env" >> $GITHUB_OUTPUT
+        fi
+    - name: Load Environment Variables
+      uses: cardinalby/export-env-action@v1
+      with:
+        envFile: './.github/variables/constants.common.env'
+    - name: Load Environment Variables
+      uses: cardinalby/export-env-action@v1
+      with:
+        envFile: './.github/variables/${{ steps.determine-env.outputs.env_file }}'
+
+    - name: Print Location Variable
+      run: |
+        echo "The location is: $LOCATION"
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+
+    - name: Ensure Resource Group Exists and Deploy Resources
+      run: |
+        echo ">>> Using variable LOCATION: $LOCATION"
+        # Ensure the resource group exists
+        az group create --name MARWTESTFROMGITHUB --location $LOCATION
+
+        # Deploy the resources using the Bicep file
+        az deployment group create \
+          --resource-group MARWTESTFROMGITHUB \
+          --template-file ./source/IaC/main.bicep
