@@ -50,19 +50,28 @@ jobs:
       uses: azure/login@v1
       with:
         creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
-
+        
     - name: Ensure Resource Group Exists and Deploy Resources
       run: |
-        echo ">>> Using variable LOCATION: $resourceLocation"
+        echo ">>> Using variables:"
+        echo "  applicationName: $applicationName"
+        echo "  location: $resourceLocation"
+        echo "  env: $environment"
+        echo "  postfixCount: $postfixCount"
+        echo "  tags: $tags"
+        echo "  uniqueDeployId: $uniqueDeployId"
+
         # Ensure the resource group exists
         az group create --name MARWTESTFROMGITHUB --location $resourceLocation
 
-        # Deploy the resources using the common Bicep file
+        # Deploy the resources using the local Bicep file and parameters
         az deployment group create \
           --resource-group MARWTESTFROMGITHUB \
-          --template-file ./common-repo/source/IaC/main.bicep
-
-        # Deploy the resources using the local Bicep file
-        az deployment group create \
-          --resource-group MARWTESTFROMGITHUB \
-          --template-file ./source/IaC/main.bicep
+          --template-file ./source/IaC/main.bicep \
+          --parameters \
+            applicationName="$applicationName" \
+            location="$resourceLocation" \
+            env="$environment" \
+            postfixCount="$postfixCount" \
+            tags="$tags" \
+            uniqueDeployId="$uniqueDeployId"

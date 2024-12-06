@@ -1,11 +1,12 @@
-@description('The name of the storage account.')
-param storageAccountName string = 'marwgithubspikedev2'
+param applicationName string
+param location string
+param env string
+param postfixCount string
+param tags object
+param uniqueDeployId string
 
-@description('The location where the storage account will be created.')
-param location string = resourceGroup().location
-
-@description('The SKU (pricing tier) for the storage account.')
-param storageAccountSku string = 'Standard_LRS'
+var storageAccountName = toLower('st${applicationName}${env}${uniqueDeployId}${postfixCount}')
+var storageAccountSku = 'Standard_LRS'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
   name: storageAccountName
@@ -14,6 +15,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     name: storageAccountSku
   }
   kind: 'StorageV2'
+  tags: tags
 }
 
 output storageAccountId string = storageAccount.id
