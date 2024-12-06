@@ -57,7 +57,12 @@ jobs:
         # Ensure the resource group exists
         az group create --name MARWTESTFROMGITHUB --location $LOCATION
 
-        # Deploy the resources using the Bicep file
+        # Deploy the resources using the common Bicep file
         az deployment group create \
           --resource-group MARWTESTFROMGITHUB \
           --template-file ./common-repo/source/IaC/main.bicep
+
+        # Deploy the resources using the local Bicep file
+        az deployment group create \
+          --resource-group MARWTESTFROMGITHUB \
+          --template-file ./source/IaC/main.bicep
