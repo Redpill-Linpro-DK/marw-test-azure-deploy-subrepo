@@ -20,6 +20,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: Redpill-Linpro-DK/marw-test-azure-deploy
+        token: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
     - name: Determine Environment File
       id: determine-env
       run: |
