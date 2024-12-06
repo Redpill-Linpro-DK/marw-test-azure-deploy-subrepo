@@ -37,7 +37,7 @@ jobs:
       uses: cardinalby/export-env-action@v1
       with:
         envFile: './common-repo/.github/variables/constants.common.env'
-    - name: Load Environment Variables
+    - name: Load Environment Variables ${{ steps.determine-env.outputs.env_file }}
       uses: cardinalby/export-env-action@v1
       with:
         envFile: './common-repo/.github/variables/${{ steps.determine-env.outputs.env_file }}'
