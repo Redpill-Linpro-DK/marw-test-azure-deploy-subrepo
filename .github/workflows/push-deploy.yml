@@ -19,6 +19,8 @@ jobs:
 
       - name: Load environment variables
         uses: Redpill-Linpro-DK/marw-test-azure-deploy/.github/actions/loadCommonVariables@main
+        with:
+          azureDeployRepoToken: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
 
       - name: Print Location Variable
         run: |
