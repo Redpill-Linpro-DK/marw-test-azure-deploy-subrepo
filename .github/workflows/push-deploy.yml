@@ -17,17 +17,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Checkout common repository
-        uses: actions/checkout@v4
+      - name: Load environment variables
+        uses: Redpill-Linpro-DK/marw-test-azure-deploy/.github/actions/loadCommonVariables@main
         with:
-          repository: Redpill-Linpro-DK/marw-test-azure-deploy
-          token: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
-          path: common-repo
-
-      - name: Load env
-        uses: ./common-repo/.github/actions/loadEnvVariables
-        with:
-          rootDir: common-repo
+          azureDeployRepoToken: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
 
       - name: Print Location Variable
         run: |
