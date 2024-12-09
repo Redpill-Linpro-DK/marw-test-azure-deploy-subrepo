@@ -6,7 +6,7 @@ on:
       - main
       - develop
       - hotfix/*
-      - '**'  # Catch-all for other branches
+      - "**" # Catch-all for other branches
 
 jobs:
   load-and-print:
@@ -14,55 +14,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Checkout common repository
-      uses: actions/checkout@v3
-      with:
-        repository: Redpill-Linpro-DK/marw-test-azure-deploy
-        token: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
-        path: common-repo
-    - name: Determine Environment File
-      id: determine-env
-      run: |
-        echo "Branch name: ${{ github.ref_name }}"
-        if [[ "${{ github.ref_name }}" == "main" || "${{ github.ref_name }}" == hotfix/* ]]; then
-          echo "env_file=constants.prod.env" >> $GITHUB_OUTPUT
-        elif [[ "${{ github.ref_name }}" == "develop" ]]; then
-          echo "env_file=constants.test.env" >> $GITHUB_OUTPUT
-        else
-          echo "env_file=constants.dev.env" >> $GITHUB_OUTPUT
-        fi
-    - name: Load Environment Variables
-      uses: cardinalby/export-env-action@v1
-      with:
-        envFile: './common-repo/.github/variables/constants.common.env'
-    - name: Load Environment Variables
-      uses: cardinalby/export-env-action@v1
-      with:
-        envFile: './common-repo/.github/variables/${{ steps.determine-env.outputs.env_file }}'
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Print Location Variable
-      run: |
-        echo "The location is: $LOCATION"
+      - name: Checkout common repository
+        uses: actions/checkout@v4
+        with:
+          repository: Redpill-Linpro-DK/marw-test-azure-deploy
+          token: ${{ secrets.DIH_FAIR_COMMON_REPO_PAT }}
+          path: common-repo
 
-    - name: Log in to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
+      - name: Load env
+        uses: ./common-repo/.github/actions/loadEnvVariables
+        with:
+          rootDir: common-repo
 
-    - name: Ensure Resource Group Exists and Deploy Resources
-      run: |
-        echo ">>> Using variable LOCATION: $LOCATION"
-        # Ensure the resource group exists
-        az group create --name MARWTESTFROMGITHUB --location $LOCATION
+      - name: Print Location Variable
+        run: |
+          echo "The location is: $resourceLocation"
 
-        # Deploy the resources using the common Bicep file
-        az deployment group create \
-          --resource-group MARWTESTFROMGITHUB \
-          --template-file ./common-repo/source/IaC/main.bicep
+      - name: Log in to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.DIH_FAIR_AZURE_CREDENTIALS_DEV }}
 
-        # Deploy the resources using the local Bicep file
-        az deployment group create \
-          --resource-group MARWTESTFROMGITHUB \
-          --template-file ./source/IaC/main.bicep
+      - name: Ensure Resource Group Exists and Deploy Resources
+        run: |
+          echo ">>> Using variable LOCATION: $resourceLocation"
+          # Ensure the resource group exists
+          az group create --name MARWTESTFROMGITHUB --location $resourceLocation
+
+          # Deploy the resources using the common Bicep file
+          az deployment group create \
+            --resource-group MARWTESTFROMGITHUB \
+            --template-file ./common-repo/source/IaC/main.bicep
+
+          # Deploy the resources using the local Bicep file
+          az deployment group create \
+            --resource-group MARWTESTFROMGITHUB \
+            --template-file ./source/IaC/main.bicep
