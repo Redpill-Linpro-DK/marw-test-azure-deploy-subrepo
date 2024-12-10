@@ -47,7 +47,7 @@ jobs:
           # Deploy the resources using the common Bicep file
           az deployment group create \
             --resource-group MARWTESTFROMGITHUB \
-            --template-file ./common-repo/source/IaC/main.bicep
+            --template-file ./source/IaC/main.bicep
 
           # Deploy the resources using the local Bicep file
           az deployment group create \
